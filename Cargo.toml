@@ -1,0 +1,49 @@
+[package]
+authors = ["David Michael Weis <dweis7@gmail.com>"]
+name = "robot-head-service"
+description = "robot-head-service"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR APACHE"
+publish = false
+readme = "README.md"
+repository = "https://github.com/dmweis/robot-head-service"
+
+[package.metadata.deb]
+assets = [
+  [
+    "target/release/robot-head-service",
+    "/usr/bin/",
+    "755",
+  ],
+  [
+    "config/settings.yaml",
+    "/etc/robot-head-service/settings.yaml",
+    "644",
+  ],
+]
+conf-files = ["/etc/robot-head-service/settings.yaml"]
+maintainer = "David Michael Weis <dweis7@gmail.com>"
+maintainer-scripts = "debian/"
+revision = ""
+systemd-units = {}
+
+[dependencies]
+# Async
+tokio = {version = "1", features = ["full"]}
+
+# Utils
+anyhow = "1"
+thiserror = "1.0"
+clap = {version = "4.2", features = ["derive"]}
+config = "0.14"
+serde = {version = "1.0", features = ["derive"]}
+
+
+# Logging
+tracing = {version = "0.1", features = ["log"]}
+tracing-subscriber = {version = "0.3", features = [
+  "registry",
+  "env-filter",
+  "json",
+]}

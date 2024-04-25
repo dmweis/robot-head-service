@@ -1,0 +1,16 @@
+[Unit]
+Description=robot-head-service
+After=network-online.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+User=robot-head-service
+DynamicUser=yes
+StateDirectory=robot-head-service
+Type=simple
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/bin/robot-head-service --config /etc/robot-head-service/settings
+
+[Install]
+WantedBy=default.target
