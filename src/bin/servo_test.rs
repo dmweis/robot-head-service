@@ -39,6 +39,7 @@ impl HeadController {
 
     async fn configure(&mut self) -> Result<()> {
         for id in ALL_MOTOR_IDS {
+            self.driver.set_origin_offset(id, 0.0).await?;
             self.driver
                 .configure_color(id, lss_driver::LedColor::Off)
                 .await?;
