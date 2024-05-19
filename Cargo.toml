@@ -12,7 +12,7 @@ repository = "https://github.com/dmweis/robot-head-service"
 [package.metadata.deb]
 assets = [
   [
-    "target/release/robot-head-service",
+    "target/release/robot_head_service",
     "/usr/bin/",
     "755",
   ],
@@ -32,13 +32,15 @@ systemd-units = {}
 # Async
 tokio = {version = "1", features = ["full"]}
 
+# Servos
+lss_driver = "0.8.4"
+
 # Utils
 anyhow = "1"
 thiserror = "1.0"
 clap = {version = "4.2", features = ["derive"]}
 config = "0.14"
 serde = {version = "1.0", features = ["derive"]}
-
 
 # Logging
 tracing = {version = "0.1", features = ["log"]}
@@ -47,3 +49,7 @@ tracing-subscriber = {version = "0.3", features = [
   "env-filter",
   "json",
 ]}
+
+# zenoh
+zenoh = "0.7.2-rc"
+zenoh-config = "0.7.2-rc"

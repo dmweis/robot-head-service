@@ -1,6 +1,4 @@
-TARGET_URL ?= homepi.local
-TARGET_HOST ?= pi@$(TARGET_URL)
-
+TARGET_DEVICE ?= pizza
 
 .PHONY: build
 build:
@@ -21,6 +19,10 @@ build-docker:
 	mkdir docker_out
 	DOCKER_BUILDKIT=1 docker build --tag robot-head-service-builder --file Dockerfile --output type=local,dest=docker_out .
 
+.PHONY: push-docker-built
+push-docker-built: build-docker
+	rsync -avz --delete docker_out/servo_test $(TARGET_DEVICE):/home/dweis/servo_test
+
 .PHONY: deploy-with-ez-cd
 deploy-with-ez-cd: build-docker
-	ez-cd-cli -f docker_out/robot-head-service.deb -d robot-head-service
+	ez-cd-cli -f docker_out/robot-head-service.deb -d $(TARGET_DEVICE)
