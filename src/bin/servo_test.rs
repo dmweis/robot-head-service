@@ -127,7 +127,7 @@ async fn main() -> anyhow::Result<()> {
     head_controller.wait_until_neck_in_position().await?;
 
     head_controller
-        .move_base_to(75.0, CommandModifier::SpeedDegrees(60))
+        .move_base_to(70.0, CommandModifier::SpeedDegrees(60))
         .await?;
     head_controller.wait_until_base_in_position().await?;
 
@@ -146,7 +146,7 @@ async fn main() -> anyhow::Result<()> {
     head_controller.wait_until_base_in_position().await?;
 
     head_controller
-        .move_base_to(75.0, CommandModifier::SpeedDegrees(60))
+        .move_base_to(70.0, CommandModifier::SpeedDegrees(60))
         .await?;
     head_controller.wait_until_base_in_position().await?;
 
@@ -155,7 +155,7 @@ async fn main() -> anyhow::Result<()> {
         .await?;
     head_controller.wait_until_base_in_position().await?;
 
-    head_controller.move_neck_to(40.0, 45).await?;
+    head_controller.move_neck_to(45.0, 30).await?;
     head_controller.wait_until_neck_in_position().await?;
 
     sleep(Duration::from_secs(1)).await;
