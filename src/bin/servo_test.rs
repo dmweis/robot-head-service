@@ -115,25 +115,20 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     setup_tracing();
     // let config = robot_head_service::configuration::AppConfig::load_config(&args.config)?;
-    turn_off_display().await?;
 
     let mut head_controller = HeadController::new(&args.port)?;
-
+    turn_on_display().await?;
     head_controller.configure().await?;
-
     head_controller
         .move_neck_to(NECK_MOTOR_A_NORMAL_POSITION, 45)
         .await?;
     head_controller.wait_until_neck_in_position().await?;
 
+    // start movement
     head_controller
-        .move_base_to(70.0, CommandModifier::SpeedDegrees(60))
+        .move_base_to(65.0, CommandModifier::SpeedDegrees(60))
         .await?;
     head_controller.wait_until_base_in_position().await?;
-
-    turn_on_display().await?;
-
-    sleep(Duration::from_secs(2)).await;
 
     head_controller
         .move_base_to(90.0, CommandModifier::SpeedDegrees(60))
@@ -146,7 +141,7 @@ async fn main() -> anyhow::Result<()> {
     head_controller.wait_until_base_in_position().await?;
 
     head_controller
-        .move_base_to(70.0, CommandModifier::SpeedDegrees(60))
+        .move_base_to(65.0, CommandModifier::SpeedDegrees(60))
         .await?;
     head_controller.wait_until_base_in_position().await?;
 
