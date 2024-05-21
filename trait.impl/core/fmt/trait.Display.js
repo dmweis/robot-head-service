@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"robot_head_service":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.78.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"robot_head_service/error/enum.ErrorWrapper.html\" title=\"enum robot_head_service::error::ErrorWrapper\">ErrorWrapper</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
