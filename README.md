@@ -12,3 +12,11 @@ z_put --key robot-head/command --value "{\"active\": true}"
 z_put --key robot-head/command --value "{\"active\": true, \"yaw\": 65.0}"
 z_put --key robot-head/command --value "{\"yaw\": 65.0}"
 ```
+
+## Combined commands
+
+```shell
+z_put --key face/display --value "{\"display_on\": false}" & z_put --key robot-head/command --value "{\"active\": false}" & wait
+
+z_put --key face/display --value "{\"display_on\": true}" & z_put --key robot-head/command --value "{\"active\": true, \"yaw\": 60.0}" & wait
+```
