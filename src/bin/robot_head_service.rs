@@ -1,8 +1,14 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
+use anyhow::Context;
 use clap::Parser;
-use tracing::info;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use lss_driver::CommandModifier;
+use robot_head_service::{
+    error::ErrorWrapper, setup_tracing, HeadController, NECK_MOTOR_A_NORMAL_POSITION,
+};
+use tokio::time::sleep;
+use tracing::{error, info};
+use zenoh::prelude::r#async::*;
 
 #[derive(Parser, Debug)]
 #[command(version, author)]
@@ -10,47 +16,93 @@ struct Args {
     /// Config path
     #[arg(long)]
     config: Option<PathBuf>,
-
-    /// Serial port
-    #[arg(long)]
-    port: String,
 }
-
-// #[tokio::main]
-// async fn main() -> anyhow::Result<()> {
-//     let args = Args::parse();
-//     setup_tracing();
-//     let config = robot_head_service::configuration::AppConfig::load_config(&args.config)?;
-//     info!("Value is {:?}", config.object.field);
-//     Ok(())
-// }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     setup_tracing();
-    // let config = robot_head_service::configuration::AppConfig::load_config(&args.config)?;
+    info!("Loading config {:?}", args.config);
+    let config = robot_head_service::configuration::AppConfig::load_config(&args.config)?;
 
-    let mut driver = lss_driver::LSSDriver::new(&args.port)?;
+    info!("Starting LSS controller {:?}", &config.motors);
+    let mut head_controller = HeadController::with_config(&config.motors)?;
+    head_controller.configure().await?;
 
-    let mut ids = vec![];
+    info!("Starting zenoh");
+    let zenoh_config = zenoh::config::Config::default();
+    let session = zenoh::open(zenoh_config)
+        .res()
+        .await
+        .map_err(ErrorWrapper::ZenohError)
+        .context("Failed to create zenoh session")?
+        .into_arc();
 
-    for id in 0..254 {
-        if driver.query_status(id).await.is_ok() {
-            ids.push(id);
+    let command_subscriber = session
+        .declare_subscriber("robot-head/command")
+        .res()
+        .await
+        .map_err(ErrorWrapper::ZenohError)
+        .context("Failed to create subscriber")?;
+
+    while let Ok(message) = command_subscriber.recv_async().await {
+        let json_message: String = message
+            .value
+            .try_into()
+            .context("Failed to convert value to string")?;
+        let command = match serde_json::from_str::<RobotHeadCommand>(&json_message) {
+            Ok(message) => message,
+            Err(err) => {
+                error!("Failed to parse json {:?}", err);
+                RobotHeadCommand::default()
+            }
+        };
+
+        if let Some(active) = command.active {
+            if !active {
+                head_controller
+                    .move_base_to(0.0, CommandModifier::SpeedDegrees(60))
+                    .await?;
+                head_controller.wait_until_base_in_position().await?;
+                head_controller.move_neck_to(45.0, 30).await?;
+                head_controller.wait_until_neck_in_position().await?;
+                sleep(Duration::from_secs(1)).await;
+                head_controller.turn_off().await?;
+                head_controller.limp_neck().await?;
+            } else {
+                head_controller
+                    .move_base_to(0.0, CommandModifier::SpeedDegrees(60))
+                    .await?;
+                head_controller
+                    .move_neck_to(NECK_MOTOR_A_NORMAL_POSITION, 45)
+                    .await?;
+            }
+        }
+
+        if let Some(yaw) = command.yaw {
+            head_controller
+                .move_base_to(yaw, CommandModifier::SpeedDegrees(60))
+                .await?;
+        }
+        if let Some(pitch) = command.pitch {
+            head_controller.move_neck_to(pitch, 60).await?;
         }
     }
-
-    info!("Found {} servos {:?}", ids.len(), ids);
 
     Ok(())
 }
 
-fn setup_tracing() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+#[derive(serde::Deserialize, Default)]
+struct RobotHeadCommand {
+    /// head is lifted in active mode
+    #[serde(default)]
+    active: Option<bool>,
+    /// direction in which we are looking
+    /// center is 0.0
+    #[serde(default)]
+    yaw: Option<f32>,
+    /// angle at which we are looking
+    /// 0.0 is flat horizon
+    #[serde(default)]
+    pitch: Option<f32>,
 }

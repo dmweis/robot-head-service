@@ -1,2 +1,4 @@
-object:
-  field: "value"
+motors:
+  serial_port: "/dev/ttyUSB0"
+  base_motor_id: 1
+  neck_motor_id: 2

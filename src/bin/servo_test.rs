@@ -3,7 +3,8 @@ use std::{path::PathBuf, time::Duration};
 use clap::Parser;
 use lss_driver::CommandModifier;
 use robot_head_service::{
-    setup_tracing, turn_off_display, turn_on_display, HeadController, NECK_MOTOR_A_NORMAL_POSITION,
+    setup_tracing, turn_off_display, turn_on_display, HeadController, DEFAULT_BASE_MOTOR_ID,
+    DEFAULT_NECK_MOTOR_A_ID, NECK_MOTOR_A_NORMAL_POSITION,
 };
 use tokio::time::sleep;
 use tracing::info;
@@ -26,7 +27,8 @@ async fn main() -> anyhow::Result<()> {
     setup_tracing();
     // let config = robot_head_service::configuration::AppConfig::load_config(&args.config)?;
 
-    let mut head_controller = HeadController::new(&args.port)?;
+    let mut head_controller =
+        HeadController::new(&args.port, DEFAULT_BASE_MOTOR_ID, DEFAULT_NECK_MOTOR_A_ID)?;
     turn_on_display().await?;
     head_controller.configure().await?;
     head_controller
@@ -52,11 +54,6 @@ async fn main() -> anyhow::Result<()> {
 
     head_controller
         .move_base_to(65.0, CommandModifier::SpeedDegrees(60))
-        .await?;
-    head_controller.wait_until_base_in_position().await?;
-
-    head_controller
-        .move_base_to(0.0, CommandModifier::SpeedDegrees(60))
         .await?;
     head_controller.wait_until_base_in_position().await?;
 

@@ -35,5 +35,6 @@ RUN cargo deb --no-build
 # Copy to exporter
 FROM scratch AS export
 COPY --from=builder /app/target/release/servo_test /servo_test
+COPY --from=builder /app/target/release/robot_head_service /robot_head_service
 COPY --from=builder /app/target/debian/robot-head-service*.deb /
 COPY --from=builder /app/target/debian/robot-head-service*.deb /robot-head-service.deb

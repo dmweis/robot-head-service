@@ -5,12 +5,14 @@ use tracing::*;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct AppConfig {
-    pub object: SampleConfig,
+    pub motors: MotorsConfig,
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct SampleConfig {
-    pub field: String,
+pub struct MotorsConfig {
+    pub serial_port: String,
+    pub base_motor_id: u8,
+    pub neck_motor_id: u8,
 }
 
 impl AppConfig {

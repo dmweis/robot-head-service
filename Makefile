@@ -22,6 +22,8 @@ build-docker:
 .PHONY: push-docker-built
 push-docker-built: build-docker
 	rsync -avz --delete docker_out/servo_test $(TARGET_DEVICE):/home/dweis/servo_test
+	rsync -avz --delete docker_out/robot_head_service $(TARGET_DEVICE):/home/dweis/robot_head_service
+	rsync -avz --delete config/settings.yaml $(TARGET_DEVICE):/home/dweis/settings.yaml
 
 .PHONY: deploy-with-ez-cd
 deploy-with-ez-cd: build-docker
